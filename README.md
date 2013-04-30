@@ -37,12 +37,24 @@ Where should we look for development specific configs?
 
 ### Normal
 
+#### 1
+
 Lets say we have a different database for production and development; In my experience this is a rather normal occurrence. Given the default configurations you would create the following 2 files:
 
 		1) APPPATH/config/dev/database.php
 		2) APPPATH/config/prod/database.php
 
 Now, when the kohana environment is set to DEVELOPMENT or TESTING it will look at 1 and use the database found in there. If the environment is set to STAGING or PRODUCTION it will look 2 and use the database found in there. 
+
+#### 2
+
+What if you don't have a different database server and all that changes the is the table name? You don't want to have to write all that authentication information so you can have a set up as follows:
+
+		1) APPPATH/config/database.php
+		2) APPPATH/config/dev/database.php
+		3) APPPATH/config/prod/database.php
+
+You have can the primary authentication information in 1 while 2 and 3 override the table name as needed for the specified environment. This also works with MODPATH and SYSPATH, the hierarchy is specified bellow.
 
 ## NOTE
 
