@@ -48,6 +48,10 @@ Now, when the kohana environment is set to DEVELOPMENT or TESTING it will look a
 
 This module is backwards compatible. If it can not find a given config in the correct environment dir (or there is no environment dir) it will attempt to load the config normaly. It will also return null if the config could not be found at all.
 
+The module will also take into account any config found that is not in the environment specific folders. The hierarchy works as followes:
+
+		(SYSPATH < MODPATH < APPPATH)/config/group.php < (SYSPATH < MODPATH < APPPATH)/config/<env>/group.php
+
 ## License
 ISC
 (c) Copyright 2013 Gilles Paquette
