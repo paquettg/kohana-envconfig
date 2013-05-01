@@ -17,19 +17,19 @@ Envconfig module built for the Kohana PHP framework.  Envconfig extends Kohana's
 
 ### Core (config/config.php)
 
-		'dir.production' => 'prod/'
+		'environment.Kohana::PRODUCTION' => 'prod/'
 
 Where should we look for production specific configs?
 
-		'dir.staging' => 'prod/'
+		'environment.Kohana::STAGING' => 'prod/'
 
 Where should we look for staging specific configs?
 
-		'dir.testing' => 'dev/'
+		'environment.Kohana::TESTING' => 'dev/'
 
 Where should we look for testing specific configs?
 
-		'dir.development' => 'dev/'
+		'environment.Kohana::DEVELOPMENT' => 'dev/'
 
 Where should we look for development specific configs?
 

@@ -1,21 +1,57 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
+/**
+ * An extension to the Kohana config class to allow loading of config file
+ * depending on environment. The folders can be modified trough the envconfig
+ * config file. The hierarchy is as followes:
+ * (SYSPATH < MODPATH < APPPATH)/config/group.php 
+ * < 
+ * (SYSPATH < MODPATH < APPPATH)/config/<env>/group.php
+ *
+ * For more information, check the README.md file.
+ *
+ * @author Gilles Paquette <gilles@gillespaquette.ca>
+ */
 class Config extends Kohana_Config {
-
+	
+	/**
+	 * States if the bootstrap function has been called.
+	 * @var bool
+	 */
 	protected $bootstrap   = FALSE;
+	/**
+	 * The directory that will contain the production specific config files.
+	 * @var string
+	 */
 	protected $production  = '';
+	/**
+	 * The directory that will contain the staging specific config files.
+	 * @var string
+	 */
 	protected $staging     = '';
+	/**
+	 * The directory that will contain the testing specific config files.
+	 * @var string
+	 */
 	protected $testing     = '';
+	/**
+	 * The directory that will contain the development specific config files.
+	 * @var string
+	 */
 	protected $development = '';
-
-	protected function bootstrap()
-	{
-		$this->production  = $this->load('envconfig.environment_dir.'.Kohana::PRODUCTION);
-		$this->staging     = $this->load('envconfig.environment_dir.'.Kohana::STAGING);
-		$this->testing     = $this->load('envconfig.environment_dir.'.Kohana::TESTING);
-		$this->development = $this->load('envconfig.environment_dir.'.Kohana::DEVELOPMENT);
-	}
-
+	
+	/**
+	 * Attempts to load a configuration group. Searches all the config sources,
+	 * merging all the directives found into a single config group. It will
+	 * also add environment specific groups to the current group.
+	 *
+	 * See [Kohana_Config] for more info
+	 *
+	 * @param   string  $group  configuration group name
+	 * @return  Kohana_Config_Group
+	 * @throws  Kohana_Exception
+	 * @uses    $this->bootstrap()
+	 */
 	public function load($group)
 	{
 		if ( ! $this->bootstrap)
@@ -57,5 +93,18 @@ class Config extends Kohana_Config {
 		}
 
 		return $config;
+	}
+	
+	/**
+	 * Loads the configs for the envconfig environment directories.
+	 *
+	 * @throws Kohana_Exception
+	 */
+	protected function bootstrap()
+	{
+		$this->production  = $this->load('envconfig.environment_dir.'.Kohana::PRODUCTION);
+		$this->staging     = $this->load('envconfig.environment_dir.'.Kohana::STAGING);
+		$this->testing     = $this->load('envconfig.environment_dir.'.Kohana::TESTING);
+		$this->development = $this->load('envconfig.environment_dir.'.Kohana::DEVELOPMENT);
 	}
 }
