@@ -19,26 +19,13 @@ class Config extends Kohana_Config {
 	 * @var bool
 	 */
 	protected $bootstrap   = FALSE;
+
 	/**
-	 * The directory that will contain the production specific config files.
-	 * @var string
+	 * This object contains the list of environments and the supporting 
+	 * directory for each environment.
+	 * @var array
 	 */
-	protected $production  = '';
-	/**
-	 * The directory that will contain the staging specific config files.
-	 * @var string
-	 */
-	protected $staging     = '';
-	/**
-	 * The directory that will contain the testing specific config files.
-	 * @var string
-	 */
-	protected $testing     = '';
-	/**
-	 * The directory that will contain the development specific config files.
-	 * @var string
-	 */
-	protected $development = '';
+	protected $environment_groups;
 	
 	/**
 	 * Attempts to load a configuration group. Searches all the config sources,
@@ -50,45 +37,52 @@ class Config extends Kohana_Config {
 	 * @param   string  $group  configuration group name
 	 * @return  Kohana_Config_Group
 	 * @throws  Kohana_Exception
-	 * @uses    $this->bootstrap()
 	 */
 	public function load($group)
 	{
+		// check if we need to bootstrap the config
 		if ( ! $this->bootstrap)
 		{
-			$this->bootstrap = TRUE;
 			$this->bootstrap();
 		}
-
-		switch (Kohana::$environment)
-		{
-			case Kohana::PRODUCTION:
-				$env_group = $this->production.$group;
-			break;
-			case Kohana::STAGING:
-				$env_group = $this->staging.$group;
-			break;
-			case Kohana::TESTING:
-				$env_group = $this->testing.$group;
-			break;
-			case Kohana::DEVELOPMENT:
-				$env_group = $this->development.$group;
-			break;
-		}
+		
+		$env_group = $this->environment_groups[Kohana::$environment].$group;
 
 		$config             = parent::load($group);
 		$environment_config = parent::load($env_group);
 
+		return $this->merge_environment($config, $environment_config);
+	}
+
+	/**
+	 * Attempts to merge the 2 given Kohana_Config_Group class or 
+	 * arrays and returns with the second one taking presendance.
+	 *
+	 * @param  mixed $config
+	 * @param  mixed $environment_config
+	 * @return mixed
+	 */
+	protected function merge_environment($config, $environment_config)
+	{
+		// is the environment config set
 		if (isset($environment_config) AND ! empty($environment_config))
 		{
+			// is it an array?
 			if(is_array($environment_config))
 			{
 				$config = Arr::merge($config, $environment_config);	
 			}
+			// is it an instance of Config_Group
 			elseif ($environment_config instanceof Config_Group)
 			{
+				$group = $config->group_name();
 				$config = Arr::merge($config->as_array(), $environment_config->as_array());
 				$config = new Config_Group($this, $group, $config);
+			}
+			// we do not know how to handle it, just set it as the environment
+			else
+			{
+				$config = $environment_config;
 			}
 		}
 
@@ -102,9 +96,10 @@ class Config extends Kohana_Config {
 	 */
 	protected function bootstrap()
 	{
-		$this->production  = $this->load('envconfig.environment_dir.'.Kohana::PRODUCTION);
-		$this->staging     = $this->load('envconfig.environment_dir.'.Kohana::STAGING);
-		$this->testing     = $this->load('envconfig.environment_dir.'.Kohana::TESTING);
-		$this->development = $this->load('envconfig.environment_dir.'.Kohana::DEVELOPMENT);
+		// boot strap has been called
+		$this->bootstrap = TRUE;
+
+		// load the Kohana_Config_Group for the environments
+		$this->environment_configs = $this->load('envconfig.environment');
 	}
 }

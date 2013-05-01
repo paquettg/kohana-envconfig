@@ -5,8 +5,8 @@ return array
 	'environment_dir' => array
 	(
 		Kohana::PRODUCTION  => 'prod/',
-		Kohana::STAGING     => 'prod/',
-		Kohana::TESTING     => 'dev/',
+		Kohana::STAGING     => 'staging/',
+		Kohana::TESTING     => 'testing/',
 		Kohana::DEVELOPMENT => 'dev/',
 	),
 );

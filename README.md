@@ -21,11 +21,11 @@ Envconfig module built for the Kohana PHP framework.  Envconfig extends Kohana's
 
 Where should we look for production specific configs?
 
-		'environment.Kohana::STAGING' => 'prod/'
+		'environment.Kohana::STAGING' => 'stagin/'
 
 Where should we look for staging specific configs?
 
-		'environment.Kohana::TESTING' => 'dev/'
+		'environment.Kohana::TESTING' => 'testing/'
 
 Where should we look for testing specific configs?
 
