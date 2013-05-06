@@ -159,14 +159,8 @@ class Config extends Kohana_Config {
 
 		if ($this->environment_fallback['enabled'])
 		{
-			$tmpconfig = $config;
-			if ($tmpconfig instanceof Config_Group)
-			{
-				$tmpconfig = $tmpconfig->as_array();
-			}
-
 			// check if we should fallback
-			return (empty($tmpconfig) AND 
+			return (count($config) == 0 AND
 			        isset($this->environment_fallback[$env]) AND
 			        ! isset($previous[$this->environment_fallback[$env]]));
 		}
