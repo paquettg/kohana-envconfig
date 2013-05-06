@@ -9,4 +9,10 @@ return array
 		Kohana::TESTING     => 'testing/',
 		Kohana::DEVELOPMENT => 'dev/',
 	),
+	'fallback' => array
+	(
+		'enabled'       => TRUE,
+		Kohana::STAGING => Kohana::PRODUCTION,
+		Kohana::TESTING => Kohana::DEVELOPMENT,
+	),
 );

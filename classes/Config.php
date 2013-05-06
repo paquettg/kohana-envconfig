@@ -16,16 +16,26 @@ class Config extends Kohana_Config {
 	
 	/**
 	 * States if the bootstrap function has been called.
+	 *
 	 * @var bool
 	 */
-	protected $bootstrap   = FALSE;
+	protected $bootstrap = FALSE;
 
 	/**
-	 * This object contains the list of environments and the supporting 
+	 * This array contains the list of environments and the supporting 
 	 * directory for each environment.
+	 *
 	 * @var array
 	 */
 	protected $environment_groups;
+
+	/** 
+	 * This array contains the list of fallbacks as well as if fallback
+	 * is enabled.
+	 *
+	 * @var array
+	 */
+	protected $environment_fallback;
 	
 	/**
 	 * Attempts to load a configuration group. Searches all the config sources,
@@ -43,15 +53,13 @@ class Config extends Kohana_Config {
 		// check if we need to bootstrap the config
 		if ( ! $this->bootstrap)
 		{
-			$this->bootstrap();
+			$this->_bootstrap();
 		}
 		
-		$env_group = $this->environment_groups[Kohana::$environment].$group;
-
 		$config             = parent::load($group);
-		$environment_config = parent::load($env_group);
+		$environment_config = $this->_load_environment($group, Kohana::$environment);
 
-		return $this->merge_environment($config, $environment_config);
+		return $this->_merge_environment($config, $environment_config);
 	}
 
 	/**
@@ -62,7 +70,7 @@ class Config extends Kohana_Config {
 	 * @param  mixed $environment_config
 	 * @return mixed
 	 */
-	protected function merge_environment($config, $environment_config)
+	protected function _merge_environment($config, $environment_config)
 	{
 		// is the environment config set
 		if (isset($environment_config) AND ! empty($environment_config))
@@ -94,12 +102,75 @@ class Config extends Kohana_Config {
 	 *
 	 * @throws Kohana_Exception
 	 */
-	protected function bootstrap()
+	protected function _bootstrap()
 	{
 		// boot strap has been called
 		$this->bootstrap = TRUE;
 
 		// load the Kohana_Config_Group for the environments
-		$this->environment_configs = $this->load('envconfig.environment');
+		$this->environment_groups   = $this->load('envconfig.environment_dir');
+		$this->environment_fallback = $this->load('envconfig.fallback');
+	}
+
+	/**
+	 * Will load the environment specific version of the group that was asked
+	 * for. This function has the potential to be recursive if fallback is
+	 * enabled.
+	 * 
+	 * @param  string $group
+	 * @param  int    $env
+	 * @param  array  $previous
+	 * @return mixed
+	 * @uses   $this->_fallback()
+	 */
+	protected function _load_environment($group, $env, $previous = array())
+	{
+		// we need to have loaded the environment config to load environments
+		if ( ! is_array($this->environment_groups))
+			return null;
+
+		// load the environment group
+		$env_group = $this->environment_groups[$env].$group;
+		$config    = parent::load($env_group);
+
+		// shall we check if we need to fallback?
+		if ($this->_fallback($config, $env, $previous))
+		{
+			// prevents circular fallback
+			$previous[$env] = TRUE;
+			$this->_load_environment($group, $this->environment_fallback[$env], $previous);
+		}
+
+		return $config;
+	}
+
+	/**
+	 * Figures out if the current config set needs to fallback.
+	 *
+	 * @param  string $group
+	 * @param  int    $env
+	 * @param  array  $previous
+	 * @return bool
+	 */
+	protected function _fallback($config, $env, $previous)
+	{
+		if ( ! is_array($this->environment_fallback))
+			return FALSE;
+
+		if ($this->environment_fallback['enabled'])
+		{
+			$tmpconfig = $config;
+			if ($tmpconfig instanceof Config_Group)
+			{
+				$tmpconfig = $tmpconfig->as_array();
+			}
+
+			// check if we should fallback
+			return (empty($tmpconfig) AND 
+			        isset($this->environment_fallback[$env]) AND
+			        ! isset($previous[$this->environment_fallback[$env]]));
+		}
+
+		return FALSE;
 	}
 }
